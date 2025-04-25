@@ -13,7 +13,6 @@ interface SearchScreenProps extends AppStackScreenProps<"Search"> {}
 export const SearchScreen: FC<SearchScreenProps> = observer(function SearchScreen() {
   const { crypto } = useStores()
 
-  console.log("-----", crypto.assetsSearch)
   useHeader(
     {
       leftIcon: "back",
