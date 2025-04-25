@@ -112,6 +112,7 @@ export interface HeaderProps {
    * Overrides `rightIcon`, `rightTx` and `rightText`.
    */
   RightActionComponent?: ReactElement
+  TitleComponent?: ReactElement
   /**
    * Optional options to pass to i18n. Useful for interpolation
    * as well as explicitly setting locale or translation fallbacks.
@@ -175,6 +176,7 @@ export function Header(props: HeaderProps) {
     style: $styleOverride,
     titleStyle: $titleStyleOverride,
     containerStyle: $containerStyleOverride,
+    TitleComponent,
   } = props
 
   const $containerInsets = useSafeAreaInsetsStyle(safeAreaEdges)
@@ -212,6 +214,7 @@ export function Header(props: HeaderProps) {
             />
           </View>
         )}
+        {TitleComponent}
 
         <HeaderAction
           tx={rightTx}

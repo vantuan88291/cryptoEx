@@ -1,109 +1,63 @@
 import { observer } from "mobx-react-lite"
 import { FC } from "react"
-import { Image, ImageStyle, TextStyle, View, ViewStyle } from "react-native"
-import { Button, Text, Screen } from "@/components"
-import { isRTL } from "@/i18n"
-import { useStores } from "../models"
-import { AppStackScreenProps } from "../navigators"
-import { $styles, type ThemedStyle } from "@/theme"
-import { useHeader } from "../utils/useHeader"
-import { useSafeAreaInsetsStyle } from "../utils/useSafeAreaInsetsStyle"
-import { useAppTheme } from "@/utils/useAppTheme"
-
-const welcomeLogo = require("../../assets/images/logo.png")
-const welcomeFace = require("../../assets/images/welcome-face.png")
+import { View, ViewStyle } from "react-native"
+import { Button, Screen, ListAsset } from "@/components"
+import { AppStackScreenProps, navigate } from "@/navigators"
+import { $styles } from "@/theme"
+import { useHeader } from "@/utils/useHeader"
+import { useStores } from "@/models"
+import { typeAsset } from "@/models/crypto/Crypto.props"
 
 interface WelcomeScreenProps extends AppStackScreenProps<"Welcome"> {}
 
 export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeScreen(_props) {
-  const { themed, theme } = useAppTheme()
-
-  const { navigation } = _props
-  const {
-    authenticationStore: { logout },
-  } = useStores()
-
-  function goNext() {
-    navigation.navigate("Demo", { screen: "DemoShowroom", params: {} })
-  }
-
   useHeader(
     {
-      rightTx: "common:logOut",
-      onRightPress: logout,
+      rightIcon: "search",
+      onRightPress: () => navigate("Search"),
+      titleTx: "welcomeScreen:title",
     },
-    [logout],
+    [],
   )
-
-  const $bottomContainerInsets = useSafeAreaInsetsStyle(["bottom"])
-
+  const { crypto } = useStores()
+  const onChangeType = (value?: typeAsset) => () => {
+    crypto.setTypeAsset(value)
+  }
   return (
-    <Screen preset="fixed" contentContainerStyle={$styles.flex1}>
-      <View style={themed($topContainer)}>
-        <Image style={themed($welcomeLogo)} source={welcomeLogo} resizeMode="contain" />
-        <Text
-          testID="welcome-heading"
-          style={themed($welcomeHeading)}
-          tx="welcomeScreen:readyForLaunch"
-          preset="heading"
-        />
-        <Text tx="welcomeScreen:exciting" preset="subheading" />
-        <Image
-          style={$welcomeFace}
-          source={welcomeFace}
-          resizeMode="contain"
-          tintColor={theme.isDark ? theme.colors.palette.neutral900 : undefined}
-        />
-      </View>
-
-      <View style={themed([$bottomContainer, $bottomContainerInsets])}>
-        <Text tx="welcomeScreen:postscript" size="md" />
-
+    <Screen preset="fixed" safeAreaEdges={["bottom"]} contentContainerStyle={$styles.flex1}>
+      <ListAsset data={crypto.assets.slice()} />
+      <View style={$bottomContainer}>
+        <Button onPress={crypto.clearData} style={$flex} tx={"welcomeScreen:clear"} />
+        <Button onPress={crypto.insertData} style={$flex} tx={"welcomeScreen:insert"} />
         <Button
-          testID="next-screen-button"
-          preset="reversed"
-          tx="welcomeScreen:letsGo"
-          onPress={goNext}
+          preset={crypto.typeAsset === "crypto" ? "filled" : "default"}
+          onPress={onChangeType("crypto")}
+          style={$flex}
+          tx={"welcomeScreen:crypto"}
+        />
+        <Button
+          preset={crypto.typeAsset === "fiat" ? "filled" : "default"}
+          onPress={onChangeType("fiat")}
+          style={$flex}
+          tx={"welcomeScreen:fiat"}
+        />
+        <Button
+          preset={crypto.typeAsset === null ? "filled" : "default"}
+          onPress={onChangeType()}
+          style={$flex}
+          tx={"welcomeScreen:all"}
         />
       </View>
     </Screen>
   )
 })
 
-const $topContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  flexShrink: 1,
-  flexGrow: 1,
-  flexBasis: "57%",
-  justifyContent: "center",
-  paddingHorizontal: spacing.lg,
-})
-
-const $bottomContainer: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-  flexShrink: 1,
-  flexGrow: 0,
-  flexBasis: "43%",
-  backgroundColor: colors.palette.neutral100,
-  borderTopLeftRadius: 16,
-  borderTopRightRadius: 16,
-  paddingHorizontal: spacing.lg,
-  justifyContent: "space-around",
-})
-
-const $welcomeLogo: ThemedStyle<ImageStyle> = ({ spacing }) => ({
-  height: 88,
-  width: "100%",
-  marginBottom: spacing.xxl,
-})
-
-const $welcomeFace: ImageStyle = {
-  height: 169,
-  width: 269,
-  position: "absolute",
-  bottom: -47,
-  right: -80,
-  transform: [{ scaleX: isRTL ? -1 : 1 }],
+const $bottomContainer: ViewStyle = {
+  flexDirection: "row",
+  gap: 5,
+  padding: 5,
 }
 
-const $welcomeHeading: ThemedStyle<TextStyle> = ({ spacing }) => ({
-  marginBottom: spacing.md,
-})
+const $flex: ViewStyle = {
+  flex: 1,
+}

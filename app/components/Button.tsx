@@ -181,14 +181,13 @@ const $baseViewStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   borderRadius: 4,
   justifyContent: "center",
   alignItems: "center",
-  paddingVertical: spacing.sm,
-  paddingHorizontal: spacing.sm,
+  paddingVertical: spacing.xxs,
+  paddingHorizontal: spacing.xxs,
   overflow: "hidden",
 })
 
 const $baseTextStyle: ThemedStyle<TextStyle> = ({ typography }) => ({
-  fontSize: 16,
-  lineHeight: 20,
+  fontSize: 12,
   fontFamily: typography.primary.medium,
   textAlign: "center",
   flexShrink: 1,
