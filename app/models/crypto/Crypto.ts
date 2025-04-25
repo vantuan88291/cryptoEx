@@ -1,23 +1,30 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "../helpers/withSetPropAction"
 import { DataAsset, typeAsset } from "@/models/crypto/Crypto.props"
-import { cryptos, fiats } from "@/models/crypto/data"
+import Toast from "react-native-toast-message"
+import { api } from "@/services/api"
+import { getRootStore } from "@/models"
 
 /**
  * Model description here for TypeScript hints.
  */
 const calculateScore = (keyword = "", market = "", marketLong = "") => {
-  let marketName = market
   let scoreValue = market.toLowerCase().indexOf(keyword.toLowerCase())
-  if (scoreValue < 0) {
+  if (scoreValue !== 0) {
     scoreValue = marketLong.toLowerCase().indexOf(keyword.toLowerCase())
-    marketName = marketLong
+    if (scoreValue !== 0) {
+      const scoreLongName = marketLong
+        .split(" ")
+        .map((item) => item.toLowerCase())
+        .indexOf(keyword.toLowerCase())
+      if (scoreLongName > -1) {
+        scoreValue = 1
+      } else {
+        scoreValue = -1
+      }
+    }
   }
-  let score = scoreValue >= 0 ? scoreValue : 999
-  if (keyword?.length === marketName?.length) {
-    score = score - 1
-  }
-  return score
+  return scoreValue
 }
 export const CryptoModel = types
   .model("Crypto")
@@ -36,17 +43,47 @@ export const CryptoModel = types
     },
     get assetsSearch() {
       if (self.keyword) {
-        return self.data.filter((item) => item.code)
+        return self.data
+          .map((item) => ({
+            ...item,
+            score: calculateScore(self.keyword || "", item.symbol || "", item.name || ""),
+          }))
+          .filter((item) => item.score === 0 || item.score === 1)
+          .sort(function (a, b) {
+            return a.score - b.score
+          })
       }
       return self.data
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
-    insertData: () => {
-      self.setProp("data", [...cryptos, ...fiats])
+    insertData: async () => {
+      getRootStore(self).commons.setLoading(true)
+      try {
+        const [crypto, fiat] = await Promise.all([api.getCrypto(), api.getFiat()])
+        self.setProp("data", [...crypto, ...fiat])
+        Toast.show({
+          type: "success",
+          text1: "Data Loaded",
+          text2: "Data has been loaded!",
+        })
+      } catch (e: any) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: e.toString(),
+        })
+      } finally {
+        getRootStore(self).commons.setLoading(false)
+      }
     },
     clearData: () => {
       self.data.clear()
+      Toast.show({
+        type: "success",
+        text1: "Clear success",
+        text2: "Data has been removed!",
+      })
     },
     setTypeAsset: (typeAsset?: typeAsset) => {
       self.typeAsset = typeAsset || null

@@ -1,8 +1,8 @@
-import { FC } from "react"
+import { FC, useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { TouchableOpacity, ViewStyle } from "react-native"
 import { AppStackScreenProps, goBack } from "@/navigators"
-import { Icon, ListAsset, Screen, TextField } from "@/components";
+import { Icon, ListAsset, Screen, TextField } from "@/components"
 import { useHeader } from "@/utils/useHeader"
 import { useStores } from "@/models"
 // import { useNavigation } from "@react-navigation/native"
@@ -13,6 +13,7 @@ interface SearchScreenProps extends AppStackScreenProps<"Search"> {}
 export const SearchScreen: FC<SearchScreenProps> = observer(function SearchScreen() {
   const { crypto } = useStores()
 
+  console.log("-----", crypto.assetsSearch)
   useHeader(
     {
       leftIcon: "back",
@@ -37,6 +38,9 @@ export const SearchScreen: FC<SearchScreenProps> = observer(function SearchScree
     },
     [crypto.keyword],
   )
+  useEffect(() => {
+    return () => crypto.setKeyword("")
+  }, [])
   return (
     <Screen safeAreaEdges={["bottom"]} contentContainerStyle={$root} preset="fixed">
       <ListAsset data={crypto.assetsSearch.slice()} isSearching={!!crypto.keyword} />

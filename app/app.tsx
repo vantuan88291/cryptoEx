@@ -10,6 +10,8 @@
  * The app navigation resides in ./app/navigators, so head over there
  * if you're interested in adding screens and navigators.
  */
+import { Loading } from "@/components/Loading";
+
 if (__DEV__) {
   // Load Reactotron in development only.
   // Note that you must be using metro's `inlineRequires` for this to work.
@@ -30,6 +32,7 @@ import { customFontsToLoad } from "./theme"
 import Config from "./config"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { loadDateFnsLocale } from "./utils/formatDate"
+import Toast from 'react-native-toast-message';
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -72,6 +75,8 @@ export function App() {
       <ErrorBoundary catchErrors={Config.catchErrors}>
         <KeyboardProvider>
           <AppNavigator />
+          <Toast />
+          <Loading />
         </KeyboardProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
